@@ -1,6 +1,7 @@
 module ThingsHelper
 
   def highlighted_content(content, query)
+    return content if query.nil?
     stems = Thing.prepare_words(query)[:included]
     words = Thing.word_breaker_value.new(content).split
 
