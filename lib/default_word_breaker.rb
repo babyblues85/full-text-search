@@ -1,5 +1,5 @@
 class DefaultWordBreaker
-  BREAKERS = [" ", "\n", "\t", ".", ",", ";", ":"]
+  BREAKERS = [" ", "\n", "\t", ".", ",", ";", ":", "\\(", "\\)", "\\[", "\\]"]
 
   def initialize(source)
     @source = source
