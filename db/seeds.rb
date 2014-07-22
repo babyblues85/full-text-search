@@ -1,7 +1,7 @@
-# This file should contain all the record creation needed to seed the database with its default values.
-# The data can then be loaded with the rake db:seed (or created alongside the db with db:setup).
-#
-# Examples:
-#
-#   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
-#   Mayor.create(name: 'Emanuel', city: cities.first)
+Thing.delete_all
+SearchDocument.delete_all
+
+# This creates a lot of Things with actual English sentences for full text search testing
+Rails.root.join("db/contents.txt").each_line do |line|
+  Thing.create content: line.chomp
+end
