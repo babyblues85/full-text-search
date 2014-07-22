@@ -37,10 +37,13 @@ module Searchable
 
     def search(query, options = {})
       prepared_words = prepare_words(query)
+      regulars   = prepared_words[:regular]
       inclusions = prepared_words[:included]
       exclusions = prepared_words[:excluded]
 
-      sql = "id IN (#{stems_query(inclusions)}"
+      sql = "id IN ("
+      sql += "#{stems_query(regulars)}" if regulars.any?
+      sql += " INTERSECT #{stems_query(inclusions)}" if inclusions.any?
       sql += " EXCEPT #{stems_query(exclusions)}" if exclusions.any?
       sql += ")"
 
@@ -50,6 +53,7 @@ module Searchable
     def prepare_words(query)
       words = query.split(/ +/)
       results = {
+        regular: [],
         excluded: [],
         included: []
       }
@@ -57,8 +61,10 @@ module Searchable
       words.each do |word|
         if word.first == "-"
           results[:excluded] << word[1..-1]
+        elsif word.first == "+"
+          results[:included] << word[1..-1]
         else
-          results[:included] << word
+          results[:regular] << word
         end
       end
 
