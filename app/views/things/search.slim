@@ -1,0 +1,7 @@
+h1 Search results
+
+- if @things.any?
+  = paginate @things
+  = render @things
+- else
+  .alert-box We can't find any things using your query :(

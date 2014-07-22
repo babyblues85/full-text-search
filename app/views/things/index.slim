@@ -1,0 +1,7 @@
+h1 List all the things!
+
+- if @things.any?
+  = paginate @things
+  = render @things
+- else
+  .alert-box No thingies to show :(

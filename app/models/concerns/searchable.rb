@@ -8,8 +8,8 @@ module Searchable
     has_many :search_documents, as: :searchable
     after_save :update_stems
 
-    set_word_breaker DefaultWordBreaker
-    set_stemmer      DefaultStemmer
+    word_breaker DefaultWordBreaker
+    stemmer      DefaultStemmer
   end
 
   def update_stems
