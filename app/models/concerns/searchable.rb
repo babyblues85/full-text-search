@@ -13,17 +13,25 @@ module Searchable
     end
 
     SearchDocument.transaction do
-      document = SearchDocument.find_or_initialize_by(searchable_type: self.class.name, searchable_id: self.id)
+      document = SearchDocument.find_or_initialize_by(searchable_type: self.class.name, 
+                                                      searchable_id: self.id)
 
-      words = self.attributes.symbolize_keys
-              .values_at(*Array(self.searchable_columns_value))
+      words = searchable_values
               .flat_map { |value| DefaultWordBreaker.new(value).split }
-              .uniq
               .map { |word| DefaultStemmer.stem(word) }
+              .uniq
 
       document.stems = words
       document.save
     end
+
+  end
+
+  private
+
+  def searchable_values
+    self.attributes.symbolize_keys
+    .values_at(*Array(self.searchable_columns_value))
   end
 
   module ClassMethods
