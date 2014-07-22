@@ -2,9 +2,14 @@ module Searchable
   extend ActiveSupport::Concern
 
   included do
-    class_attribute :searchable_columns_value
+    class_attribute :searchable_columns_value, :stemmer_value, 
+                    :word_breaker_value
+
     has_many :search_documents, as: :searchable
     after_save :update_stems
+
+    set_word_breaker DefaultWordBreaker
+    set_stemmer      DefaultStemmer
   end
 
   def update_stems
@@ -17,8 +22,8 @@ module Searchable
                                                       searchable_id: self.id)
 
       words = searchable_values
-              .flat_map { |value| DefaultWordBreaker.new(value).split }
-              .map { |word| DefaultStemmer.stem(word) }
+              .flat_map { |value| self.class.word_breaker_value.new(value).split }
+              .map { |word| self.class.stemmer_value.stem(word) }
               .uniq
 
       document.stems = words
@@ -37,6 +42,14 @@ module Searchable
   module ClassMethods
     def searchable_columns(*columns)
       self.searchable_columns_value = columns
+    end
+
+    def stemmer(klass)
+      self.stemmer_value = klass
+    end
+
+    def word_breaker(klass)
+      self.word_breaker_value = klass
     end
 
     def search(query, options = {})
