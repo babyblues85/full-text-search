@@ -1,7 +1,7 @@
 class ThingsController < ApplicationController
 
   def index
-    @things = Thing.order(:created_at).page(params[:page])
+    @things = Thing.order("created_at DESC").page(params[:page])
   end
 
   def search
