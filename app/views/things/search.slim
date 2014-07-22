@@ -1,5 +1,13 @@
 h1 Search results
 
+.alert-box.info.radius
+  ' Use
+  kbd -word
+  '
+  ' to skip things containing a given word. For example:
+  kbd chrome -firefox
+  '
+  | will only find things mentioning chrome, but not firefox.
 - if @things.any?
   = paginate @things
   = render @things
