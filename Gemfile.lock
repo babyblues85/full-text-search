@@ -1,12 +1,3 @@
-GIT
-  remote: git://github.com/activerecord-hackery/squeel.git
-  revision: 7ebdff6fa39c90da69ac0f0d2fb12f2706f1b5c3
-  specs:
-    squeel (1.2.1)
-      activerecord (>= 3.0)
-      activesupport (>= 3.0)
-      polyamorous (~> 1.1.0)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -51,6 +42,7 @@ GEM
     diff-lcs (1.2.5)
     erubis (2.7.0)
     execjs (2.2.1)
+    fast-stemmer (1.0.2)
     hike (1.2.3)
     i18n (0.6.11)
     jbuilder (2.1.3)
@@ -68,8 +60,6 @@ GEM
     minitest (5.4.0)
     multi_json (1.10.1)
     pg (0.17.1)
-    polyamorous (1.1.0)
-      activerecord (>= 3.0)
     polyglot (0.3.5)
     pry (0.10.0)
       coderay (~> 1.1.0)
@@ -150,6 +140,7 @@ PLATFORMS
 DEPENDENCIES
   activerecord-import
   coffee-rails (~> 4.0.0)
+  fast-stemmer
   jbuilder (~> 2.0)
   jquery-rails
   pg
@@ -159,5 +150,4 @@ DEPENDENCIES
   sass-rails (~> 4.0.3)
   sdoc (~> 0.4.0)
   spring
-  squeel!
   uglifier (>= 1.3.0)

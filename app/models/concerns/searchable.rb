@@ -12,25 +12,26 @@ module Searchable
       raise "Define searchable columns using #searchable_columns class method"
     end
 
-    Stem.where(searchable_type: self.class.name, searchable_id: self.id)
-        .delete_all
+    Stem.transaction do
+      Stem.where(searchable_type: self.class.name, searchable_id: self.id)
+          .delete_all
 
-    words = self.attributes.symbolize_keys
-            .values_at(*Array(self.searchable_columns_value))
-            .flat_map { |value| value.downcase.split(" ") }
-            .uniq
+      words = self.attributes.symbolize_keys
+              .values_at(*Array(self.searchable_columns_value))
+              .flat_map { |value| DefaultWordBreaker.new(value).split }
 
-    stems = []
+      stems = []
 
-    words.each do |word|
-      stems << Stem.new(searchable_type: self.class.name, searchable_id: self.id, word: word)
+      words.uniq.each do |word|
+        stem = DefaultStemmer.stem(word)
+        stems << Stem.new(searchable_type: self.class.name, searchable_id: self.id, word: stem)
+      end
+
+      Stem.import stems
     end
-
-    Stem.import stems
   end
 
   module ClassMethods
-
     def searchable_columns(*columns)
       self.searchable_columns_value = columns
     end
@@ -59,12 +60,13 @@ module Searchable
       }
 
       words.each do |word|
-        if word.first == "-"
-          results[:excluded] << word[1..-1]
-        elsif word.first == "+"
-          results[:included] << word[1..-1]
+        case word.first
+        when "-"
+          results[:excluded] << DefaultStemmer.stem(word[1..-1])
+        when "+"
+          results[:included] << DefaultStemmer.stem(word[1..-1])
         else
-          results[:regular] << word
+          results[:regular] << DefaultStemmer.stem(word)
         end
       end
 
