@@ -22,8 +22,8 @@ body
     section.top-bar-section
       ul.left
         li.has-form
-          .row.collapse
-            .large-8.small-9.columns
+          .row
+            .large-12.small-12.columns
               = simple_form_for Thing.new, url: search_things_path, method: :get do |f|
                 = f.input :content, as: :string, label: false, \
                   placeholder: "Find things", input_html: { name: "query", value: params[:query]}
