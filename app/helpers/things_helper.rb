@@ -7,7 +7,9 @@ module ThingsHelper
 
     conversions = Hash[words.map { |word| [Thing.stemmer_value.stem(word), word] }].slice(*stems)
     conversions.values.each do |word|
-      content.gsub!(word) { |highlight| content_tag(:span, highlight, class: 'highlight') }
+      content.gsub!(word) do |highlight| 
+        content_tag(:span, highlight, class: 'highlight')
+      end
     end
     content
   end
