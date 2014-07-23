@@ -78,7 +78,7 @@ module Searchable
 
     def stems_query(inclusions, exclusions)
       relation = SearchDocument.select(:searchable_id)
-          .where(searchable_type: 'Thing')
+          .where(searchable_type: self.name)
           .where("stems @> ARRAY[?]::varchar[]", inclusions)
 
       if exclusions.any?

@@ -66,4 +66,11 @@ describe Searchable do
     end
   end
 
+  describe ".search" do
+    it "searches by normalized stems" do
+      thing = subject.create(content: 'running')
+      expect(subject.search("running").first).to eq(thing)
+    end
+  end
+
 end
