@@ -1,5 +1,4 @@
 module ThingsHelper
-
   def highlighted_content(content, query)
     return content if query.nil?
     stems = Thing.prepare_stems(query)[:included]

@@ -9,7 +9,6 @@ class DefaultWordBreaker
     @source.split(regexp_splitter)
   end
 
-
   def regexp_splitter
     Regexp.new("[#{BREAKERS.join}]+")
   end
