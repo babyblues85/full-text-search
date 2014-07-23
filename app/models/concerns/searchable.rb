@@ -54,10 +54,8 @@ module Searchable
 
     def search(query, options = {})
       prepared_words = prepare_words(query)
-      inclusions = prepared_words[:included]
-      exclusions = prepared_words[:excluded]
 
-      where("id IN (#{stems_query(inclusions, exclusions)})")
+      where("id IN (#{stems_query(prepared_words[:included], prepared_words[:excluded])})")
     end
 
     def prepare_words(query)
