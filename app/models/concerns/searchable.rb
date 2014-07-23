@@ -53,12 +53,12 @@ module Searchable
     end
 
     def search(query, options = {})
-      prepared_words = prepare_words(query)
+      stems = prepare_stems(query)
 
-      where("id IN (#{stems_query(prepared_words[:included], prepared_words[:excluded])})")
+      where("id IN (#{stems_query(stems[:included], stems[:excluded])})")
     end
 
-    def prepare_words(query)
+    def prepare_stems(query)
       words = query.split(/ +/)
       results = {
         excluded: [],
