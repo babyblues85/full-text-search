@@ -40,4 +40,30 @@ describe Searchable do
     end
   end
 
+  describe "#update_stems" do
+    context "creating new searchable object" do
+      it "creates new search document with stems" do
+        expect(SearchDocument.count).to eq(0)
+        thing = subject.create(content: 'test running')
+        expect(SearchDocument.count).to eq(1)
+      end
+
+      it "sets stems for the created SearchDocument" do
+        thing = subject.create(content: 'test running')
+        expect(thing.search_documents.first.stems).to eq(["test", "run"])
+      end
+    end
+
+    context "updating existing searchable object" do
+      it "changes only the stems column in associated SearchDocument" do
+        thing = subject.create(content: 'test running')
+        document = thing.search_documents.first
+        expect(document.stems).to eq(["test", "run"])
+        thing.update_attribute(:content, 'test flying')
+        document.reload
+        expect(document.stems).to eq(["test", "fly"])
+      end
+    end
+  end
+
 end
