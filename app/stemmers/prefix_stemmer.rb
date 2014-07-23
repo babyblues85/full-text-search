@@ -1,2 +1,0 @@
-class PrefixStemmer
-end
