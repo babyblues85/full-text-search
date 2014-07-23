@@ -9,7 +9,7 @@ describe DefaultWordBreaker do
     end
 
     it "splits input by brackets" do
-      expect(described_class.new("a(b)[c]").split).to eq(%w{a b c})
+      expect(described_class.new("a(b)[c]<d>").split).to eq(%w{a b c d})
     end
 
     it "splits input by quotes" do
