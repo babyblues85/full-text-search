@@ -71,6 +71,30 @@ describe Searchable do
       thing = subject.create(content: 'running')
       expect(subject.search("running").first).to eq(thing)
     end
+
+    it "returns only results containing all words from query" do
+      thing = subject.create(content: 'quick brown fox')
+      subject.create(content: 'red fox jumps')
+      expect(subject.search("quick fox").count).to eq(1)
+      expect(subject.search("quick fox").first).to eq(thing)
+    end
+
+    it "allows excluding results using -word" do
+      subject.create(content: 'chrome and firefox mozilla')
+      subject.create(content: 'google chrome')
+
+      results = subject.search("chrome -firefox -mozilla").pluck(:content)
+      expect(results).to eq(["google chrome"])
+    end
   end
 
+  describe ".prepare_stems" do
+    it "groups words by inclusion or exclusion" do
+      expected = {
+        excluded: ['fox'],
+        included: ['quick', 'brown']
+      }
+      expect(subject.prepare_stems("quick brown -fox")).to eq(expected)
+    end
+  end
 end
