@@ -1,15 +1,16 @@
-require 'rails_helper'
+describe ThingsHelper, type: :helper do
+  describe "#highlighted_content" do
+    context "query supplied" do
+      it "highlights words from search query" do
+        result = helper.highlighted_content("running fox", "run")
+        expect(result).to eq("<span class=\"highlight\">running</span> fox")
+      end
+    end
 
-# Specs in this file have access to a helper object that includes
-# the ThingsHelper. For example:
-#
-# describe ThingsHelper do
-#   describe "string concat" do
-#     it "concats two strings with spaces" do
-#       expect(helper.concat_strings("this","that")).to eq("this that")
-#     end
-#   end
-# end
-RSpec.describe ThingsHelper, :type => :helper do
-  pending "add some examples to (or delete) #{__FILE__}"
+    context "query is empty" do
+      it "returns content as-is" do
+        expect(helper.highlighted_content("running fox", nil)).to eq("running fox")
+      end
+    end
+  end
 end
