@@ -10,9 +10,9 @@ describe Searchable do
 
   describe ".included" do
     it "adds search configuration attributes" do
-      expect(subject).to respond_to(:searchable_columns_value)
-      expect(subject).to respond_to(:stemmer_value)
-      expect(subject).to respond_to(:word_breaker_value)
+      expect(subject).to respond_to(:searchable_columns_array)
+      expect(subject).to respond_to(:stemmer_klass)
+      expect(subject).to respond_to(:word_breaker_klass)
     end
 
     it "adds has_many association for SearchDocument" do
@@ -20,8 +20,8 @@ describe Searchable do
     end
 
     it "sets word breaker and stemmer do defaults" do
-      expect(subject.stemmer_value).to eq(DefaultStemmer)
-      expect(subject.word_breaker_value).to eq(DefaultWordBreaker)
+      expect(subject.stemmer_klass).to eq(DefaultStemmer)
+      expect(subject.word_breaker_klass).to eq(DefaultWordBreaker)
     end
 
     it "should call after_save :update_stems callback" do
