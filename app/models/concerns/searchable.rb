@@ -67,9 +67,9 @@ module Searchable
 
       words.each do |word|
         if word.first == "-"
-          results[:excluded] << DefaultStemmer.stem(word[1..-1])
+          results[:excluded] << self.stemmer_value.stem(word[1..-1])
         else
-          results[:included] << DefaultStemmer.stem(word)
+          results[:included] << self.stemmer_value.stem(word)
         end
       end
 
