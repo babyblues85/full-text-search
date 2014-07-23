@@ -97,4 +97,27 @@ describe Searchable do
       expect(subject.prepare_stems("quick brown -fox")).to eq(expected)
     end
   end
+
+  describe ".stems_query" do
+    context "no exclusions given" do
+      it "builds a query for inclusions only" do
+        expected = SearchDocument.select(:searchable_id)
+            .where(searchable_type: subject.name)
+            .where("stems @> ARRAY[?]::varchar[]", ['quick', 'fox']).to_sql
+
+        expect(subject.stems_query(['quick', 'fox'], [])).to eq(expected)
+      end
+    end
+
+    context "with exclusions given" do
+      it "builds a query for inclusions and exclusions" do
+        expected = SearchDocument.select(:searchable_id)
+            .where(searchable_type: subject.name)
+            .where("stems @> ARRAY[?]::varchar[]", ['quick', 'fox'])
+            .where.not("stems && ARRAY[?]::varchar[]", ['brown']).to_sql
+
+        expect(subject.stems_query(['quick', 'fox'], ['brown'])).to eq(expected)
+      end
+    end
+  end
 end
