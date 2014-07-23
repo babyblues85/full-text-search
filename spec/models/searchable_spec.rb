@@ -1,6 +1,8 @@
 class DummyThing < ActiveRecord::Base
   self.table_name = "things"
   include Searchable
+
+  searchable_columns :content
 end
 
 describe Searchable do
@@ -26,6 +28,15 @@ describe Searchable do
       thing = subject.new(content: 'test')
       expect(thing).to receive(:update_stems)
       thing.save
+    end
+  end
+
+  context "destroying searchable object" do
+    it "removes all associated :search_documents" do
+      thing = subject.create(content: 'test')
+      expect(thing.search_documents.count).to eq(1)
+      thing.destroy
+      expect(thing.search_documents.count).to eq(0)
     end
   end
 

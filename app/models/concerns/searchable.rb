@@ -5,7 +5,7 @@ module Searchable
     class_attribute :searchable_columns_value, :stemmer_value, 
                     :word_breaker_value
 
-    has_many :search_documents, as: :searchable
+    has_many :search_documents, as: :searchable, dependent: :delete_all
     after_save :update_stems
 
     word_breaker DefaultWordBreaker
