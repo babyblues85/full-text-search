@@ -15,8 +15,8 @@ describe Searchable do
       expect(subject).to respond_to(:word_breaker_klass)
     end
 
-    it "adds has_many association for SearchDocument" do
-      expect(subject.reflect_on_association(:search_documents).macro).to eq(:has_many)
+    it "adds has_many association for Stem joins" do
+      expect(subject.reflect_on_association(:stem_joins).macro).to eq(:has_many)
     end
 
     it "sets word breaker and stemmer do defaults" do
@@ -32,36 +32,34 @@ describe Searchable do
   end
 
   context "destroying searchable object" do
-    it "removes all associated :search_documents" do
+    it "removes all associated :stem_joins" do
       thing = subject.create(content: 'test')
-      expect(thing.search_documents.count).to eq(1)
+      expect(thing.stem_joins.count).to eq(1)
       thing.destroy
-      expect(thing.search_documents.count).to eq(0)
+      expect(thing.stem_joins.count).to eq(0)
     end
   end
 
   describe "#update_stems" do
     context "creating new searchable object" do
-      it "creates new search document with stems" do
-        expect(SearchDocument.count).to eq(0)
+      it "creates stems for every word" do
+        expect(Stem.count).to eq(0)
         thing = subject.create(content: 'test running')
-        expect(SearchDocument.count).to eq(1)
+        expect(Stem.count).to eq(2)
       end
 
-      it "sets stems for the created SearchDocument" do
+      it "sets stems for the created Stem" do
         thing = subject.create(content: 'test running')
-        expect(thing.search_documents.first.stems).to eq(["test", "run"])
+        expect(thing.stems.pluck(:word)).to eq(["test", "run"])
       end
     end
 
     context "updating existing searchable object" do
-      it "changes only the stems column in associated SearchDocument" do
+      it "it recreates index of stems" do
         thing = subject.create(content: 'test running')
-        document = thing.search_documents.first
-        expect(document.stems).to eq(["test", "run"])
+        expect(thing.stems.pluck(:word)).to eq(["test", "run"])
         thing.update_attribute(:content, 'test flying')
-        document.reload
-        expect(document.stems).to eq(["test", "fly"])
+        expect(thing.stems.pluck(:word)).to eq(["test", "fly"])
       end
     end
   end
@@ -97,13 +95,16 @@ describe Searchable do
       expect(subject.prepare_stems("quick brown -fox")).to eq(expected)
     end
   end
-
+ 
   describe ".stems_query" do
     context "no exclusions given" do
       it "builds a query for inclusions only" do
-        expected = SearchDocument.select(:searchable_id)
-            .where(searchable_type: subject.name)
-            .where("stems @> ARRAY[?]::varchar[]", ['quick', 'fox']).to_sql
+        expected = ['quick', 'fox'].map do |word|
+          Stem.select(:searchable_id)
+          .joins(:stem_joins)
+          .where("stem_joins.searchable_type = ? AND stems.word = ?", 'DummyThing', word)
+          .to_sql
+        end.join(" INTERSECT ")
 
         expect(subject.stems_query(['quick', 'fox'], [])).to eq(expected)
       end
@@ -111,12 +112,23 @@ describe Searchable do
 
     context "with exclusions given" do
       it "builds a query for inclusions and exclusions" do
-        expected = SearchDocument.select(:searchable_id)
-            .where(searchable_type: subject.name)
-            .where("stems @> ARRAY[?]::varchar[]", ['quick', 'fox'])
-            .where.not("stems && ARRAY[?]::varchar[]", ['brown']).to_sql
+        expected = ['quick', 'fox'].map do |word|
+          Stem.select(:searchable_id)
+          .joins(:stem_joins)
+          .where("stem_joins.searchable_type = ? AND stems.word = ?", 'DummyThing', word)
+          .to_sql
+        end.join(" INTERSECT ")
 
-        expect(subject.stems_query(['quick', 'fox'], ['brown'])).to eq(expected)
+        expected += " EXCEPT "  
+        expected += ["brown", "slow"].map do |word|
+          Stem.select(:searchable_id)
+          .joins(:stem_joins)
+          .where("stem_joins.searchable_type = ? AND stems.word = ?", 'DummyThing', word)
+          .to_sql
+        end.join(" EXCEPT ")
+
+
+        expect(subject.stems_query(['quick', 'fox'], ['brown', 'slow'])).to eq(expected)
       end
     end
   end

@@ -11,21 +11,24 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140722204905) do
+ActiveRecord::Schema.define(version: 20140726094828) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "search_documents", force: true do |t|
+  create_table "stem_joins", force: true do |t|
+    t.integer  "stem_id"
     t.integer  "searchable_id"
     t.string   "searchable_type"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "stems",           default: [], array: true
   end
 
-  add_index "search_documents", ["searchable_type"], name: "index_search_documents_on_searchable_type", using: :btree
-  add_index "search_documents", ["stems"], name: "index_search_documents_on_stems", using: :gin
+  create_table "stems", force: true do |t|
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "word"
+  end
 
   create_table "things", force: true do |t|
     t.text     "content"

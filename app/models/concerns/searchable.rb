@@ -5,7 +5,9 @@ module Searchable
     class_attribute :searchable_columns_array, :stemmer_klass, 
                     :word_breaker_klass
 
-    has_many :search_documents, as: :searchable, dependent: :delete_all
+    has_many :stem_joins, as: :searchable, dependent: :delete_all
+    has_many :stems, through: :stem_joins
+
     after_save :update_stems
 
     word_breaker DefaultWordBreaker
@@ -17,17 +19,18 @@ module Searchable
       raise "Define searchable columns using #searchable_columns class method"
     end
 
-    SearchDocument.transaction do
-      document = SearchDocument.find_or_initialize_by(searchable_type: self.class.name, 
-                                                      searchable_id: self.id)
+    Stem.transaction do
+      self.stem_joins.delete_all
 
       words = searchable_values
               .flat_map { |value| self.class.word_breaker_klass.new(value).split }
               .map { |word| self.class.stemmer_klass.stem(word) }
               .uniq
 
-      document.stems = words
-      document.save
+      words.each do |word|
+        stem = Stem.find_or_create_by(word: word)
+        self.stem_joins.find_or_create_by(searchable_type: self.class.name, searchable_id: self.id, stem_id: stem.id)
+      end
     end
 
   end
@@ -77,15 +80,26 @@ module Searchable
     end
 
     def stems_query(inclusions, exclusions)
-      relation = SearchDocument.select(:searchable_id)
-          .where(searchable_type: self.name)
-          .where("stems @> ARRAY[?]::varchar[]", inclusions)
+      queries = []
+      
+      queries << inclusions.map do |word|
+        Stem.select(:searchable_id)
+        .joins(:stem_joins)
+        .where("stem_joins.searchable_type = ? AND stems.word = ?", self.name, word)
+        .to_sql
+      end.join(" INTERSECT ")
 
       if exclusions.any?
-        relation = relation.where.not("stems && ARRAY[?]::varchar[]", exclusions)
+        queries << "EXCEPT"
+        queries << exclusions.map do |word|
+          Stem.select(:searchable_id)
+          .joins(:stem_joins)
+          .where("stem_joins.searchable_type = ? AND stems.word = ?", self.name, word)
+          .to_sql
+        end.join(" EXCEPT ")
       end
 
-      relation.to_sql
+      queries.join(" ")
     end
   end
 end
