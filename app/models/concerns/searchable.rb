@@ -83,23 +83,24 @@ module Searchable
       queries = []
       
       queries << inclusions.map do |word|
-        Stem.select(:searchable_id)
-        .joins(:stem_joins)
-        .where("stem_joins.searchable_type = ? AND stems.word = ?", self.name, word)
-        .to_sql
+        word_query(word)
       end.join(" INTERSECT ")
 
       if exclusions.any?
         queries << "EXCEPT"
         queries << exclusions.map do |word|
-          Stem.select(:searchable_id)
-          .joins(:stem_joins)
-          .where("stem_joins.searchable_type = ? AND stems.word = ?", self.name, word)
-          .to_sql
+          word_query(word)
         end.join(" EXCEPT ")
       end
 
       queries.join(" ")
+    end
+
+    def word_query(word)
+      Stem.select(:searchable_id)
+        .joins(:stem_joins)
+        .where("stem_joins.searchable_type = ? AND stems.word = ?", self.name, word)
+        .to_sql
     end
   end
 end
